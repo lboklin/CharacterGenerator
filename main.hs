@@ -16,7 +16,7 @@ main :: IO ()
 main = do
         putStrLn $ color Gray "Enter a seed number: "
         seed <- getLine
-        putStrLn $ (++) "\n" $ characterToString $ read seed
+        putStrLn $ (++) "\n" $ characterToString $ genCharacter $ read seed
 
 -------------------
 -- data types -----
@@ -155,8 +155,8 @@ skillsToString (Skills ai lh cr re tc aw ex pl pa) = foldr (++) [] ss
              , (color Yellow "Patience:          ") ++ (show pa) ++ "\n"
              ]
 
-characterToString :: Int -> String
-characterToString seed = foldl (++) h [x ++ "\n" | x <- [n, a, d, s]]
+characterToString :: Character -> String
+characterToString character = foldl (++) h [x ++ "\n" | x <- [n, a, d, s]]
   where
     cbc = colorBegin Cyan
     ce  = colorEnd
@@ -164,17 +164,16 @@ characterToString seed = foldl (++) h [x ++ "\n" | x <- [n, a, d, s]]
     cy  = color Yellow
     cm  = color Magenta
     cc  = color Cyan
-    c   = genCharacter seed :: Character
     p   = color Red "----------------------------\n"
     h   = cbc ++ p ++ p ++ (color Red "Generated Character Info:\n") ++ p
-    ns  = fullname c
+    ns  = fullname character
     fn  = (++) (cy "Firstname:   ") $ firstname ns
     ln  = (++) (cy "Lastname:    ") $ lastname ns
     nn  = (++) (cy "Nickname:    ") $ nickname ns
     n   = fn ++ "\n" ++ ln ++ "\n" ++ nn
-    a   = (++) (cy "Age:         ") $ show $ age c
-    d   = (++) (cy "Description: ") $ description c
-    s   = (++) (p ++ p ++ cr ("Skills:\n" ++ p)) $ skillsToString $ skills c
+    a   = (++) (cy "Age:         ") $ show $ age character
+    d   = (++) (cy "Description: ") $ description character
+    s   = (++) (p ++ p ++ cr ("Skills:\n" ++ p)) $ skillsToString $ skills character
 
 -------------------------
 -- Generator functions --
