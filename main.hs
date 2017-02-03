@@ -21,20 +21,6 @@ main = do
 data Color = Red | Green | Yellow | Blue | Magenta | Cyan | Gray
    deriving (Show, Read, Eq)
 
-colorBegin color = "\ESC[" ++ c ++ "m\STX"
-  where
-    c = case color of Red     -> "31"
-                      Green   -> "32"
-                      Yellow  -> "33"
-                      Blue    -> "34"
-                      Magenta -> "35"
-                      Cyan    -> "36"
-                      Gray    -> "38"
-
-colorEnd = "\ESC[m\STX"
-
-color clr txt = (colorBegin clr) ++ txt ++ colorEnd
-
 data Character = Character
     { fullName    :: Fullname
     , age         :: Int
@@ -55,32 +41,52 @@ data Name = Firstname String
           deriving (Show, Eq, Ord)
 
 data Traits = Traits
-    { fearlessness       :: Float
-    , communication      :: Float
-    , determination      :: Float
-    , confidence         :: Float
-    , reactionQuickness  :: Float
-    , fineMotorSkills    :: Float
-    , criticalThinking   :: Float
-    , logicalReasoning   :: Float
-    , patternRecognition :: Float
-    , attention          :: Float
-    , mentalEndurance    :: Float
-    , selfControl        :: Float
-    , emotionalStability :: Float
+    { fearlessness       :: Int
+    , communication      :: Int
+    , determination      :: Int
+    , confidence         :: Int
+    , reactionQuickness  :: Int
+    , fineMotorSkills    :: Int
+    , criticalThinking   :: Int
+    , logicalReasoning   :: Int
+    , patternRecognition :: Int
+    , attention          :: Int
+    , mentalEndurance    :: Int
+    , selfControl        :: Int
+    , emotionalStability :: Int
     } deriving (Show, Read)
 
 data Skills = Skills
-    { aim              :: Float
-    , levelHeadedness  :: Float
-    , creativity       :: Float
-    , reflex           :: Float
-    , teamCoordination :: Float
-    , awareness        :: Float
-    , experience       :: Float
-    , planning         :: Float
-    , patience         :: Float
+    { aim              :: Int
+    , levelHeadedness  :: Int
+    , creativity       :: Int
+    , reflex           :: Int
+    , teamCoordination :: Int
+    , awareness        :: Int
+    , experience       :: Int
+    , planning         :: Int
+    , patience         :: Int
     } deriving (Show, Read)
+
+------------
+-- Colors --
+
+colorBegin color = "\ESC[" ++ c ++ "m\STX"
+  where
+    c = case color of Red     -> "31"
+                      Green   -> "32"
+                      Yellow  -> "33"
+                      Blue    -> "34"
+                      Magenta -> "35"
+                      Cyan    -> "36"
+                      Gray    -> "38"
+
+colorEnd = "\ESC[m\STX"
+
+color clr txt = (colorBegin clr) ++ txt ++ colorEnd
+
+----------------
+-- Some lists --
 
 firstNames = [ "John"
              , "Jack"
@@ -105,7 +111,7 @@ lastNames = [ "Shepard"
             , "Solo"
             , "Moonwalker"
             , "Weasel"
-            , "Castley" 
+            , "Castley"
             ]
 
 nickNames = [ "Ken"
@@ -118,8 +124,10 @@ nickNames = [ "Ken"
             , "Costello"
             , "Lick"
             , "Moonboy"
-            , "The Pilot" 
+            , "The Pilot"
             ]
+
+--------------
 
 -- | TODO: Have genNames generate a Name instead of a String.
 -- | This takes a list of names and outputs the Names of a character
