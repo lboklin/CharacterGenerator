@@ -14,7 +14,7 @@ module Main where
 
 import TermColors
 import CharacterGen
-import Character.Character
+import Character
 
 main :: IO ()
 main = do

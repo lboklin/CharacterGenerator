@@ -16,10 +16,7 @@ module CharacterGen
 
 import System.Random
 import TermColors
-import Character.Character
-import Character.Name
-import Character.Skills
-import Character.Traits
+import Character
 
 ----------------
 -- Some lists --
