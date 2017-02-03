@@ -14,15 +14,18 @@ import System.Random
 
 main :: IO ()
 main = do
-        putStr "Enter a seed number: "
+        putStrLn $ color Gray "Enter a seed number: "
         seed <- getLine
-        putStrLn $ (++) "\n" $ printRandomCharacter $ read seed
+        putStrLn $ (++) "\n" $ characterToString $ read seed
+
+-------------------
+-- data types -----
 
 data Color = Red | Green | Yellow | Blue | Magenta | Cyan | Gray
    deriving (Show, Read, Eq)
 
 data Character = Character
-    { fullName    :: Fullname
+    { fullname    :: Fullname
     , age         :: Int
     , description :: String
     , traits      :: Traits
@@ -88,7 +91,7 @@ color clr txt = (colorBegin clr) ++ txt ++ colorEnd
 ----------------
 -- Some lists --
 
-firstNames = [ "John"
+firstnames = [ "John"
              , "Jack"
              , "Robert"
              , "Bernard"
@@ -102,7 +105,7 @@ firstNames = [ "John"
              , "Han"
              ]
 
-lastNames = [ "Shepard"
+lastnames = [ "Shepard"
             , "O'Neill"
             , "Ford"
             , "Lowe"
@@ -114,7 +117,7 @@ lastNames = [ "Shepard"
             , "Castley"
             ]
 
-nickNames = [ "Ken"
+nicknames = [ "Ken"
             , "Ben"
             , "Cando"
             , "Feeler"
@@ -127,32 +130,67 @@ nickNames = [ "Ken"
             , "The Pilot"
             ]
 
---------------
+--------------------
+-- Make-presentable-output functions
 
--- | TODO: Have genNames generate a Name instead of a String.
+fullnameToString :: Fullname -> String
+fullnameToString (Fullname fn ln nn) = foldr (++) "" ns
+  where
+    cy = color Yellow
+    ns = [ (cy "Firstname:   ") ++ (show fn) ++ "\n"
+         , (cy "Lastname:    ") ++ (show ln) ++ "\n"
+         , (cy "Nickname:    ") ++ (show nn)
+         ]
+
+skillsToString :: Skills -> String
+skillsToString (Skills ai lh cr re tc aw ex pl pa) = foldr (++) [] ss
+  where ss = [ (color Yellow "Aim:               ") ++ (show ai) ++ "\n"
+             , (color Yellow "Levelheadedness:   ") ++ (show lh) ++ "\n"
+             , (color Yellow "Creativity:        ") ++ (show cr) ++ "\n"
+             , (color Yellow "Reflex:            ") ++ (show re) ++ "\n"
+             , (color Yellow "Team Coordination: ") ++ (show tc) ++ "\n"
+             , (color Yellow "Awareness:         ") ++ (show aw) ++ "\n"
+             , (color Yellow "Experience:        ") ++ (show ex) ++ "\n"
+             , (color Yellow "Planning:          ") ++ (show pl) ++ "\n"
+             , (color Yellow "Patience:          ") ++ (show pa) ++ "\n"
+             ]
+
+characterToString :: Int -> String
+characterToString seed = foldl (++) h [x ++ "\n" | x <- [n, a, d, s]]
+  where
+    cbc = colorBegin Cyan
+    ce  = colorEnd
+    cr  = color Red
+    cy  = color Yellow
+    cm  = color Magenta
+    cc  = color Cyan
+    c   = genCharacter seed :: Character
+    p   = color Red "----------------------------\n"
+    h   = cbc ++ p ++ p ++ (color Red "Generated Character Info:\n") ++ p
+    ns  = fullname c
+    fn  = (++) (cy "Firstname:   ") $ firstname ns
+    ln  = (++) (cy "Lastname:    ") $ lastname ns
+    nn  = (++) (cy "Nickname:    ") $ nickname ns
+    n   = fn ++ "\n" ++ ln ++ "\n" ++ nn
+    a   = (++) (cy "Age:         ") $ show $ age c
+    d   = (++) (cy "Description: ") $ description c
+    s   = (++) (p ++ p ++ cr ("Skills:\n" ++ p)) $ skillsToString $ skills c
+
+-------------------------
+-- Generator functions --
+
+-- | TODO: Have gennames generate a Name instead of a String.
 -- | This takes a list of names and outputs the Names of a character
 genFullname :: [String] -> [String] -> [String] -> Int -> Fullname
 genFullname fns lns nns seed = Fullname fn ln nn
   where
-    index = head . randomRs (1, length ns - 1) $ mkStdGen seed
+    index = head $ randomRs (1, length ns - 1) $ mkStdGen seed
     fn    = ns !! index !! 0
     ln    = ns !! index !! 1
     nn    = ns !! index !! 2
     ns    = [ [a, b, c]
             | a <- fns, b <- lns, c <- nns
             ]
-
-fullNameToString :: Fullname -> String
-fullNameToString (Fullname fn ln nn) = foldr (++) "" ns
-  where
-    cby = colorBegin Yellow
-    ce  = colorEnd
-    ns = [ cby
-         , "Firstname: " ++ (show fn) ++ "\n"
-         , "Lastname:  " ++ (show ln) ++ "\n"
-         , "Nickname:  " ++ (show nn) ++ "\n"
-         , ce
-         ]
 
 -- | TODO: Make the values of the traits have limited deviation from 0.5
 genTraits :: Int -> Traits
@@ -185,56 +223,19 @@ genSkills seed = Skills { aim              = rns !! 0
                         } where
                             rns = take 9 . randomRs (1, 99) $ mkStdGen seed
 
-skillsToString :: Skills -> String
-skillsToString (Skills ai lh cr re tc aw ex pl pa) = foldr (++) [] ss
-  where ss = [ (color Yellow "Aim:               ") ++ (show ai) ++ "\n"
-             , (color Yellow "Levelheadedness:   ") ++ (show lh) ++ "\n"
-             , (color Yellow "Creativity:        ") ++ (show cr) ++ "\n"
-             , (color Yellow "Reflex:            ") ++ (show re) ++ "\n"
-             , (color Yellow "Team Coordination: ") ++ (show tc) ++ "\n"
-             , (color Yellow "Awareness:         ") ++ (show aw) ++ "\n"
-             , (color Yellow "Experience:        ") ++ (show ex) ++ "\n"
-             , (color Yellow "Planning:          ") ++ (show pl) ++ "\n"
-             , (color Yellow "Patience:          ") ++ (show pa) ++ "\n"
-             ]
-
-{-stringsToPrettyString :: [String] -> String-}
-{-stringsToPrettyString [] = ""-}
-{-stringsToPrettyString = foldr (++) []-}
 
 -- | TODO: change sks from taking a seed to tts and have that make sense
 {-genCharacter :: String -> Int -> Traits -> Int -> Character-}
 {-genCharacter name age traits seed =-}
 genCharacter :: Int -> Character
-genCharacter seed = Character { fullName = gn
+genCharacter seed = Character { fullname = ns
                               , age = ag
                               , description = dc
                               , traits = ts
                               , skills = ss
                               } where
-                                  gn = genFullname firstNames lastNames nickNames seed
+                                  ns = genFullname firstnames lastnames nicknames seed
                                   ag = head . randomRs (13, 36) $ mkStdGen seed
-                                  dc = (show $ nickname gn) ++ " is a great person."
+                                  dc = (nickname ns) ++ " is a great person."
                                   ts = genTraits seed
                                   ss = genSkills seed
-
-charSheetHeader :: String
-charSheetHeader = color Red "Generated Character Info:\n"
-charSheetSeparator = color Red "----------------------------\n"
-
-printRandomCharacter :: Int -> String
-printRandomCharacter seed = foldl (++) h [x ++ "\n" | x <- [n, a, d, s]]
-  where
-    cbc = colorBegin Cyan
-    ce  = colorEnd
-    cr  = color Red
-    cy  = color Yellow
-    cm  = color Magenta
-    cc  = color Cyan
-    c   = genCharacter seed :: Character
-    p   = charSheetSeparator
-    h   = cbc ++ p ++ p ++ charSheetHeader ++ p
-    n   = (++) fullNameToString $ fullName c
-    a   = (++) (cy "Age:         ") $ show $ age c
-    d   = (++) (cy "Description: ") $ description c
-    s   = (++) (p ++ p ++ cr ("Skills:\n" ++ p)) $ skillsToString $ skills c
