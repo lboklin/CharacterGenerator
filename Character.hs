@@ -1,12 +1,28 @@
+{- |
+Module      :  Character
+Description :  Generate a character with stats based on a seed argument.
+Copyright   :  (c) Ludvig Böklin
+License     :  LGPLv3
+
+Maintainer  :  ludvig.boklin@protonmail.com
+Stability   :  experimental
+Portability :  portable
+
+<module description starting at first column>
+-}
+
 module Character
 ( Character(..)
-, characterToString
 , Name(..)
 , Fullname(..)
-, fullnameToString
+, Skill
 , Skills(..)
-, skillsToString
 , Traits(..)
+, characterToString
+, fullnameToString
+, skillsToString
+, skillP
+, skillToInt
 ) where
 
 import System.Random
@@ -44,8 +60,8 @@ characterToString character = foldl (++) h [x ++ "\n" | x <- [n, a, d, s]]
 -- Name ---------
 
 data Name = Firstname String
-          | Lastname String
-          | Nickname String
+          | Lastname  String
+          | Nickname  String
           deriving (Show, Eq, Ord)
 
 data Fullname = Fullname
@@ -63,35 +79,55 @@ fullnameToString (Fullname fn ln nn) = foldr (++) "" ns
          , (cy "Nickname:    ") ++ (show nn)
          ]
 
--- | TODO: Convert Skills data type into Skill,
 --      with the fields as value constructors.
 
+data Skill = Aim
+           | Awareness
+           | Creativity
+           | Experience
+           | Levelheadedness
+           | Patience
+           | Planning
+           | Reflex
+           | TeamCoordination
+
+
+data SkillP = SkillP Int deriving (Show, Read, Ord, Eq)
+
+skillP :: Int -> SkillP
+skillP n | 0 < n && n < 100 = SkillP n
+        | otherwise         = error "Our universe can̈́'t work with that value."
+
+skillToInt :: SkillP -> Int
+skillToInt (SkillP n) = n
+
 data Skills = Skills
-    { aim              :: !Int
-    , levelHeadedness  :: !Int
-    , creativity       :: !Int
-    , reflex           :: !Int
-    , teamCoordination :: !Int
-    , awareness        :: !Int
-    , experience       :: !Int
-    , planning         :: !Int
-    , patience         :: !Int
+    { aim              :: !SkillP
+    , awareness        :: !SkillP
+    , creativity       :: !SkillP
+    , experience       :: !SkillP
+    , levelHeadedness  :: !SkillP
+    , patience         :: !SkillP
+    , planning         :: !SkillP
+    , reflex           :: !SkillP
+    , teamCoordination :: !SkillP
     } deriving (Show, Read)
 
 skillsToString :: Skills -> String
 skillsToString (Skills ai lh cr re tc aw ex pl pa) = foldr (++) [] ss
-  where ss = [ (colorWrap Yellow "Aim:               ") ++ (show ai) ++ "\n"
-             , (colorWrap Yellow "Levelheadedness:   ") ++ (show lh) ++ "\n"
-             , (colorWrap Yellow "Creativity:        ") ++ (show cr) ++ "\n"
-             , (colorWrap Yellow "Reflex:            ") ++ (show re) ++ "\n"
-             , (colorWrap Yellow "Team Coordination: ") ++ (show tc) ++ "\n"
-             , (colorWrap Yellow "Awareness:         ") ++ (show aw) ++ "\n"
-             , (colorWrap Yellow "Experience:        ") ++ (show ex) ++ "\n"
-             , (colorWrap Yellow "Planning:          ") ++ (show pl) ++ "\n"
-             , (colorWrap Yellow "Patience:          ") ++ (show pa) ++ "\n"
+  where sp = (.) show $ skillToInt
+        ss = [ (colorWrap Yellow "Aim:               ") ++ sp ai ++ "%\n"
+             , (colorWrap Yellow "Levelheadedness:   ") ++ sp lh ++ "%\n"
+             , (colorWrap Yellow "Creativity:        ") ++ sp cr ++ "%\n"
+             , (colorWrap Yellow "Reflex:            ") ++ sp re ++ "%\n"
+             , (colorWrap Yellow "Team Coordination: ") ++ sp tc ++ "%\n"
+             , (colorWrap Yellow "Awareness:         ") ++ sp aw ++ "%\n"
+             , (colorWrap Yellow "Experience:        ") ++ sp ex ++ "%\n"
+             , (colorWrap Yellow "Planning:          ") ++ sp pl ++ "%\n"
+             , (colorWrap Yellow "Patience:          ") ++ sp pa ++ "%\n"
              ]
 
--- | TODO: Convert Traits data type into Trait,
+-- | TODO: Make a Trait enum,
 --      with the fields as value constructors.
 
 data Traits = Traits

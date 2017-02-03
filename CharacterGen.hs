@@ -93,15 +93,15 @@ genTraits seed = Traits { fearlessness = v !! 0
                             v = take 13 . randomRs (1, 99) $ mkStdGen seed
 
 genSkills :: Int -> Skills
-genSkills seed = Skills { aim              = rns !! 0
-                        , levelHeadedness  = rns !! 1
-                        , creativity       = rns !! 2
-                        , reflex           = rns !! 3
-                        , teamCoordination = rns !! 4
-                        , awareness        = rns !! 5
-                        , experience       = rns !! 6
-                        , planning         = rns !! 7
-                        , patience         = rns !! 8
+genSkills seed = Skills { aim              = skillP $ rns !! 0
+                        , awareness        = skillP $ rns !! 5
+                        , creativity       = skillP $ rns !! 2
+                        , experience       = skillP $ rns !! 6
+                        , levelHeadedness  = skillP $ rns !! 1
+                        , patience         = skillP $ rns !! 8
+                        , planning         = skillP $ rns !! 7
+                        , reflex           = skillP $ rns !! 3
+                        , teamCoordination = skillP $ rns !! 4
                         } where
                             rns = take 9 . randomRs (1, 99) $ mkStdGen seed
 
