@@ -36,33 +36,37 @@ colorEnd = "\ESC[m\STX"
 color clr txt = (colorBegin clr) ++ txt ++ colorEnd
 
 data Character = Character
-    { fullName :: String
-    , age :: Int
+    { fullName    :: Fullname
+    , age         :: Int
     , description :: String
-    , traits :: Traits
-    , skills :: Skills
-    } deriving (Show, Read)
+    , traits      :: Traits
+    , skills      :: Skills
+    } deriving (Show)
 
--- | As it stands now, this datatype is not used. See genNames further down.
-{-data Name = Name
-    { firstName :: String
-    , nickName :: String
-    , lastName :: String
-    } deriving (Show)-}
+data Fullname = Fullname
+    { firstname :: String
+    , lastname  :: String
+    , nickname  :: String
+    } deriving (Show, Eq, Ord)
+
+data Name = Firstname String
+          | Lastname String
+          | Nickname String
+          deriving (Show, Eq, Ord)
 
 data Traits = Traits
-    { fearlessness :: Float
-    , communication :: Float
-    , determination :: Float
-    , confidence :: Float
-    , reactionQuickness :: Float
-    , fineMotorSkills :: Float
-    , criticalThinking :: Float
-    , logicalReasoning :: Float
+    { fearlessness       :: Float
+    , communication      :: Float
+    , determination      :: Float
+    , confidence         :: Float
+    , reactionQuickness  :: Float
+    , fineMotorSkills    :: Float
+    , criticalThinking   :: Float
+    , logicalReasoning   :: Float
     , patternRecognition :: Float
-    , attention :: Float
-    , mentalEndurance :: Float
-    , selfControl :: Float
+    , attention          :: Float
+    , mentalEndurance    :: Float
+    , selfControl        :: Float
     , emotionalStability :: Float
     } deriving (Show, Read)
 
@@ -89,7 +93,8 @@ firstNames = [ "John"
              , "George"
              , "Ron"
              , "Luke"
-             , "Han" ]
+             , "Han"
+             ]
 
 lastNames = [ "Shepard"
             , "O'Neill"
@@ -115,12 +120,28 @@ nickNames = [ "Ken"
             , "The Pilot" ]
 
 -- | TODO: Have genNames generate a Name instead of a String.
-genNames :: [String] -> [String] -> [String] -> Int -> String
-genNames fns nns lns seed = ns !! index
+-- | This takes a list of names and outputs the Names of a character
+genFullname :: [String] -> [String] -> [String] -> Int -> Fullname
+genFullname fns lns nns seed = Fullname fn ln nn
   where
     index = head . randomRs (1, length ns - 1) $ mkStdGen seed
-    ns = [ a ++ " \"" ++ b ++ "\" " ++ c
-         | a <- fns , b <- nns , c <- lns
+    fn    = ns !! index !! 0
+    ln    = ns !! index !! 1
+    nn    = ns !! index !! 2
+    ns    = [ [a, b, c]
+            | a <- fns, b <- lns, c <- nns
+            ]
+
+namesToString :: Fullname -> String
+genNames (Fullname fn ln nn) = foldr (++) [] ns
+  where
+    cby = colorBegin Yellow
+    ce  = colorEnd
+    ns = [ cby
+         , "Firstname: " ++ (show fn) ++ "\n"
+         , "Lastname:  " ++ (show ln) ++ "\n"
+         , "Nickname:  " ++ (show nn) ++ "\n"
+         , ce
          ]
 
 -- | TODO: Make the values of the traits have limited deviation from 0.5
@@ -181,9 +202,9 @@ genCharacter seed = Character { fullName = gn
                               , traits = ts
                               , skills = ss
                               } where
-                                  gn = genNames firstNames nickNames lastNames seed
+                                  gn = genFullname firstNames lastNames nickNames seed
                                   ag = head . randomRs (13, 36) $ mkStdGen seed
-                                  dc = gn ++ " is a great person."
+                                  dc = (show $ nickname gn) ++ " is a great person."
                                   ts = genTraits seed
                                   ss = genSkills seed
 
@@ -203,7 +224,7 @@ printRandomCharacter seed = foldl (++) h [x ++ "\n" | x <- [n, a, d, s]]
     c   = genCharacter seed :: Character
     p   = charSheetSeparator
     h   = cbc ++ p ++ p ++ charSheetHeader ++ p
-    n   = (++) (cy "Name:        ") $ fullName c
+    n   = (++) namesToString $ fullName c
     a   = (++) (cy "Age:         ") $ show $ age c
     d   = (++) (cy "Description: ") $ description c
     s   = (++) (p ++ p ++ cr ("Skills:\n" ++ p)) $ skillsToString $ skills c
