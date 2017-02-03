@@ -71,15 +71,15 @@ data Traits = Traits
     } deriving (Show, Read)
 
 data Skills = Skills
-    { aim :: Float
-    , levelHeadedness :: Float
-    , creativity :: Float
-    , reflex :: Float
+    { aim              :: Float
+    , levelHeadedness  :: Float
+    , creativity       :: Float
+    , reflex           :: Float
     , teamCoordination :: Float
-    , awareness :: Float
-    , experience :: Float
-    , planning :: Float
-    , patience :: Float
+    , awareness        :: Float
+    , experience       :: Float
+    , planning         :: Float
+    , patience         :: Float
     } deriving (Show, Read)
 
 firstNames = [ "John"
@@ -105,7 +105,8 @@ lastNames = [ "Shepard"
             , "Solo"
             , "Moonwalker"
             , "Weasel"
-            , "Castley" ]
+            , "Castley" 
+            ]
 
 nickNames = [ "Ken"
             , "Ben"
@@ -117,7 +118,8 @@ nickNames = [ "Ken"
             , "Costello"
             , "Lick"
             , "Moonboy"
-            , "The Pilot" ]
+            , "The Pilot" 
+            ]
 
 -- | TODO: Have genNames generate a Name instead of a String.
 -- | This takes a list of names and outputs the Names of a character
@@ -132,8 +134,8 @@ genFullname fns lns nns seed = Fullname fn ln nn
             | a <- fns, b <- lns, c <- nns
             ]
 
-namesToString :: Fullname -> String
-genNames (Fullname fn ln nn) = foldr (++) [] ns
+fullNameToString :: Fullname -> String
+fullNameToString (Fullname fn ln nn) = foldr (++) "" ns
   where
     cby = colorBegin Yellow
     ce  = colorEnd
@@ -224,7 +226,7 @@ printRandomCharacter seed = foldl (++) h [x ++ "\n" | x <- [n, a, d, s]]
     c   = genCharacter seed :: Character
     p   = charSheetSeparator
     h   = cbc ++ p ++ p ++ charSheetHeader ++ p
-    n   = (++) namesToString $ fullName c
+    n   = (++) fullNameToString $ fullName c
     a   = (++) (cy "Age:         ") $ show $ age c
     d   = (++) (cy "Description: ") $ description c
     s   = (++) (p ++ p ++ cr ("Skills:\n" ++ p)) $ skillsToString $ skills c
