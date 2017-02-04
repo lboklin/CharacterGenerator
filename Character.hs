@@ -15,14 +15,12 @@ module Character
 ( Character(..)
 , Name(..)
 , Fullname(..)
-, Skill
-, Skills(..)
 , Traits(..)
+, Skills
 , characterToString
 , fullnameToString
+, skillsFromTraits
 , skillsToString
-, skillP
-, skillToInt
 ) where
 
 import System.Random
@@ -79,70 +77,83 @@ fullnameToString (Fullname fn ln nn) = foldr (++) "" ns
          , (cy "Nickname:    ") ++ (show nn)
          ]
 
---      with the fields as value constructors.
-
-data Skill = Aim
-           | Awareness
-           | Creativity
-           | Experience
-           | Levelheadedness
-           | Patience
-           | Planning
-           | Reflex
-           | TeamCoordination
-
-
-data SkillP = SkillP Int deriving (Show, Read, Ord, Eq)
-
-skillP :: Int -> SkillP
-skillP n | 0 < n && n < 100 = SkillP n
-        | otherwise         = error "Our universe can̈́'t work with that value."
-
-skillToInt :: SkillP -> Int
-skillToInt (SkillP n) = n
-
-data Skills = Skills
-    { aim              :: !SkillP
-    , awareness        :: !SkillP
-    , creativity       :: !SkillP
-    , experience       :: !SkillP
-    , levelHeadedness  :: !SkillP
-    , patience         :: !SkillP
-    , planning         :: !SkillP
-    , reflex           :: !SkillP
-    , teamCoordination :: !SkillP
-    } deriving (Show, Read)
-
-skillsToString :: Skills -> String
-skillsToString (Skills ai lh cr re tc aw ex pl pa) = foldr (++) [] ss
-  where sp = (.) show $ skillToInt
-        ss = [ (colorWrap Yellow "Aim:               ") ++ sp ai ++ "%\n"
-             , (colorWrap Yellow "Levelheadedness:   ") ++ sp lh ++ "%\n"
-             , (colorWrap Yellow "Creativity:        ") ++ sp cr ++ "%\n"
-             , (colorWrap Yellow "Reflex:            ") ++ sp re ++ "%\n"
-             , (colorWrap Yellow "Team Coordination: ") ++ sp tc ++ "%\n"
-             , (colorWrap Yellow "Awareness:         ") ++ sp aw ++ "%\n"
-             , (colorWrap Yellow "Experience:        ") ++ sp ex ++ "%\n"
-             , (colorWrap Yellow "Planning:          ") ++ sp pl ++ "%\n"
-             , (colorWrap Yellow "Patience:          ") ++ sp pa ++ "%\n"
-             ]
-
--- | TODO: Make a Trait enum,
---      with the fields as value constructors.
+data Trait = Attention
+           | Communication
+           | Confidence
+           | CriticalThinking
+           | Determination
+           | EmotionalStability
+           | FineMotorSkills
+           | LogicalReasoning
+           | MentalEndurance
+           | PatternRecognition
+           | ReactionQuickness
+           | Discipline
+           | Fearlessness
+           deriving (Show, Ord, Eq, Enum)
 
 data Traits = Traits
-    { fearlessness       :: !Int
-    , communication      :: !Int
-    , determination      :: !Int
-    , confidence         :: !Int
-    , reactionQuickness  :: !Int
-    , fineMotorSkills    :: !Int
-    , criticalThinking   :: !Int
-    , logicalReasoning   :: !Int
-    , patternRecognition :: !Int
-    , attention          :: !Int
-    , mentalEndurance    :: !Int
-    , selfControl        :: !Int
-    , emotionalStability :: !Int
+    { attention          :: !Double
+    , communication      :: !Double
+    , confidence         :: !Double
+    , criticalThinking   :: !Double
+    , determination      :: !Double
+    , discipline         :: !Double
+    , emotionalStability :: !Double
+    , fearlessness       :: !Double
+    , fineMotorSkills    :: !Double
+    , logicalReasoning   :: !Double
+    , mentalEndurance    :: !Double
+    , patternRecognition :: !Double
+    , reactionQuickness  :: !Double
     } deriving (Show, Read)
 
+{-data Skill = Aim Int-}
+           {-| Awareness Int-}
+           {-| Creativity Int-}
+           {-| Experience Int-}
+           {-| Levelheadedness Int-}
+           {-| Patience Int-}
+           {-| Planning Int-}
+           {-| Reflex Int-}
+           {-| TeamCoordination Int-}
+           {-deriving (Show, Ord, Eq, Enum)-}
+
+data Skills = Skills
+    { aim              :: !Double
+    , awareness        :: !Double
+    , creativity       :: !Double
+    , experience       :: !Double
+    , levelheadedness  :: !Double
+    , patience         :: !Double
+    , planning         :: !Double
+    , reflex           :: !Double
+    , teamCoordination :: !Double
+    } deriving (Show, Read)
+
+skillsFromTraits (Traits atn com cnf cth dtm dsp emo fea fms log men pat rea) =
+    Skills ai aw cr ex lh pa pl re tc
+  where ai = (/) (emo + fms + pat) 3
+        aw = (/) (atn + dsp + log + pat + rea) 5
+        cr = (/) (emo + fea + log + pat) 4
+        ex = (/) (cnf + pat + men + dsp) 4
+        lh = (/) (atn + dtm + dsp + emo + fea + log + pat) 7
+        pa = (/) (cnf + dtm + dsp + emo + fea + men + log) 7
+        pl = (/) (atn + cth + emo + fea + log + pat) 6
+        re = (/) (atn + dtm + fea + fms + pat + rea) 6
+        tc = (/) (com + cnf + cth + dtm + dsp) 5
+
+
+
+skillsToString :: Skills -> String
+skillsToString (Skills ai aw cr ex lh pa pl re tc) = foldr (++) [] ss
+  where ss = [ (colorWrap Yellow "Aim:               ") ++ (show $ round $ ai) ++ "%\n"
+             , (colorWrap Yellow "Awareness:         ") ++ (show $ round $ aw) ++ "%\n"
+             , (colorWrap Yellow "Creativity:        ") ++ (show $ round $ cr) ++ "%\n"
+             , (colorWrap Yellow "Experience:        ") ++ (show $ round $ ex) ++ "%\n"
+             , (colorWrap Yellow "Levelheadedness:   ") ++ (show $ round $ lh) ++ "%\n"
+             , (colorWrap Yellow "Patience:          ") ++ (show $ round $ pa) ++ "%\n"
+             , (colorWrap Yellow "Planning:          ") ++ (show $ round $ pl) ++ "%\n"
+             , (colorWrap Yellow "Reflex:            ") ++ (show $ round $ re) ++ "%\n"
+             , (colorWrap Yellow "Team Coordination: ") ++ (show $ round $ tc) ++ "%\n"
+             ]

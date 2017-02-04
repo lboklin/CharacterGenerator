@@ -76,47 +76,49 @@ genFullname fns lns nns seed = Fullname fn ln nn
 
 -- | TODO: Make the values of the traits have limited deviation from 0.5
 genTraits :: Int -> Traits
-genTraits seed = Traits { fearlessness = v !! 0
-                        , communication = v !! 1
-                        , determination = v !! 2
-                        , confidence = v !! 3
-                        , reactionQuickness = v !! 4
-                        , fineMotorSkills = v !! 5
-                        , criticalThinking = v !! 6
-                        , logicalReasoning = v !! 7
-                        , patternRecognition = v !! 8
-                        , attention = v !! 9
-                        , mentalEndurance = v !! 10
-                        , selfControl = v !! 11
-                        , emotionalStability = v !! 12
-                        } where
-                            v = take 13 . randomRs (1, 99) $ mkStdGen seed
+genTraits seed =
+    Traits { fearlessness       = v !! 0
+           , communication      = v !! 1
+           , determination      = v !! 2
+           , confidence         = v !! 3
+           , reactionQuickness  = v !! 4
+           , fineMotorSkills    = v !! 5
+           , criticalThinking   = v !! 6
+           , logicalReasoning   = v !! 7
+           , patternRecognition = v !! 8
+           , attention          = v !! 9
+           , mentalEndurance    = v !! 10
+           , discipline         = v !! 11
+           , emotionalStability = v !! 12
+           } where
+               v = take 13 . randomRs (1, 99) $ mkStdGen seed
 
-genSkills :: Int -> Skills
-genSkills seed = Skills { aim              = skillP $ rns !! 0
-                        , awareness        = skillP $ rns !! 5
-                        , creativity       = skillP $ rns !! 2
-                        , experience       = skillP $ rns !! 6
-                        , levelHeadedness  = skillP $ rns !! 1
-                        , patience         = skillP $ rns !! 8
-                        , planning         = skillP $ rns !! 7
-                        , reflex           = skillP $ rns !! 3
-                        , teamCoordination = skillP $ rns !! 4
-                        } where
-                            rns = take 9 . randomRs (1, 99) $ mkStdGen seed
+{-genSkills :: Double -> Skills-}
+{-genSkills seed =-}
+    {-Skills { aim              = n-}
+           {-, awareness        = n-}
+           {-, creativity       = n-}
+           {-, experience       = n-}
+           {-, levelheadedness  = n-}
+           {-, patience         = n-}
+           {-, planning         = n-}
+           {-, reflex           = n-}
+           {-, teamCoordination = n-}
+           {-} where-}
+               {-n   = rns !! 0-}
+               {-rns = take 9 . randomRs (1, 99) $ mkStdGen seed-}
 
 -- | TODO: change sks from taking a seed to tts and have that make sense
-{-genCharacter :: String -> Int -> Traits -> Int -> Character-}
-{-genCharacter name age traits seed =-}
 genCharacter :: Int -> Character
-genCharacter seed = Character { fullname = ns
-                              , age = ag
-                              , description = dc
-                              , traits = ts
-                              , skills = ss
-                              } where
-                                  ns = genFullname firstnames lastnames nicknames seed
-                                  ag = head . randomRs (13, 36) $ mkStdGen seed
-                                  dc = (nickname ns) ++ " is a great person."
-                                  ts = genTraits seed
-                                  ss = genSkills seed
+genCharacter seed =
+    Character { fullname = ns
+              , age = ag
+              , description = dc
+              , traits = ts
+              , skills = ss
+              } where
+                  ns = genFullname firstnames lastnames nicknames seed
+                  ag = head . randomRs (13, 36) $ mkStdGen seed
+                  dc = (nickname ns) ++ " is a great person."
+                  ts = genTraits seed
+                  ss = skillsFromTraits ts
