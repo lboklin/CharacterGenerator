@@ -17,11 +17,8 @@ module Character
 , Fullname(..)
 , Traits(..)
 , Skills
-, characterToString
-, fullnameToString
+, formattedCharacterSheet
 , skillsFromTraits
-, skillsToString
-, valueBar
 ) where
 
 import System.Random
@@ -35,8 +32,8 @@ data Character = Character
     , skills      :: !Skills
     } deriving (Show)
 
-characterToString :: Character -> String
-characterToString character = foldl (++) h [x ++ "\n" | x <- [n, a, d, s]]
+formattedCharacterSheet :: Character -> String
+formattedCharacterSheet character = foldl (++) h [x ++ "\n" | x <- [n, a, d, s]]
   where
     cbc = formatBegin (Cyan, Default, None)
     ce  = formatEnd
@@ -44,8 +41,8 @@ characterToString character = foldl (++) h [x ++ "\n" | x <- [n, a, d, s]]
     cy  = colorWrap Yellow
     cm  = colorWrap Magenta
     cc  = colorWrap Cyan
-    p   = colorWrap Red "----------------------------\n"
-    h   = cbc ++ p ++ p ++ (colorWrap Red "Generated Character Info:\n") ++ p
+    p   = colorWrap Red "\n"
+    h   = cbc ++ p ++ (colorWrap Red "Generated Character Info:\n") ++ p
     ns  = fullname character
     fn  = (++) (cy "Firstname:   ") $ firstname ns
     ln  = (++) (cy "Lastname:    ") $ lastname ns
@@ -69,8 +66,8 @@ data Fullname = Fullname
     , nickname  :: !String
     } deriving (Show, Eq, Ord)
 
-fullnameToString :: Fullname -> String
-fullnameToString (Fullname fn ln nn) = foldr (++) "" ns
+formattedFullname :: Fullname -> String
+formattedFullname (Fullname fn ln nn) = foldr (++) "" ns
   where
     cy = colorWrap Yellow
     ns = [ (cy "Firstname:   ") ++ (show fn) ++ "\n"
@@ -132,17 +129,27 @@ data Skills = Skills
     , teamCoordination :: !Double
     } deriving (Show, Read)
 
+majorMinor :: [Double] -> [Double] -> Double
+majorMinor majors minors = (maTot + miTot) / (fromIntegral $ length (majors ++ minors))
+  where maFactor = 1.5
+        maAdj = map (* maFactor) majors :: [Double]
+        miAdj = map ((/) maFactor) minors :: [Double]
+        maTot = foldr (+) 0 maAdj :: Double
+        miTot = foldr (+) 0 miAdj :: Double
+
+skillsFromTraits :: Traits -> Skills
 skillsFromTraits (Traits atn com cnf cth dtm dsp emo fea fms log men pat rea) =
     Skills ai aw cr ex lh pa pl re tc
-  where ai = (/) (emo + fms + pat) 3
-        aw = (/) (atn + dsp + log + pat + rea) 5
-        cr = (/) (emo + fea + log + pat) 4
-        ex = (/) (cnf + pat + men + dsp) 4
-        lh = (/) (atn + dtm + dsp + emo + fea + log + pat) 7
-        pa = (/) (cnf + dtm + dsp + emo + fea + men + log) 7
-        pl = (/) (atn + cth + emo + fea + log + pat) 6
-        re = (/) (atn + dtm + fea + fms + pat + rea) 6
-        tc = (/) (com + cnf + cth + dtm + dsp) 5
+  where
+        ai = majorMinor [fms] [emo, pat]
+        aw = majorMinor [atn, rea, pat] [dsp, log]
+        cr = majorMinor [emo] [fea, log, pat]
+        ex = majorMinor [pat, dsp] [cnf, men]
+        lh = majorMinor [emo, fea, log] [atn, dtm, dsp, pat]
+        pa = majorMinor [dtm, dsp, emo, fea, men] [cnf, log]
+        pl = majorMinor [atn, emo, log, pat] [cth, fea]
+        re = majorMinor [atn, fea, fms, rea] [dtm, pat]
+        tc = majorMinor [com, cnf, dtm, dsp] [cth]
 
 valueBar :: Int -> String
 valueBar n = filledF filledChar ++ nonfilledF nonfilledChar

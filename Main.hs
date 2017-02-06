@@ -20,4 +20,4 @@ main :: IO ()
 main = do
         putStrLn $ colorWrap Gray "Enter a seed number: "
         seed <- getLine
-        putStrLn $ (++) "\n" $ characterToString $ genCharacter $ read seed
+        putStrLn $ (++) "\n" $ formattedCharacterSheet $ genCharacter $ read seed
