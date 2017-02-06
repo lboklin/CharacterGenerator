@@ -21,6 +21,7 @@ module Character
 , fullnameToString
 , skillsFromTraits
 , skillsToString
+, valueBar
 ) where
 
 import System.Random
@@ -37,8 +38,8 @@ data Character = Character
 characterToString :: Character -> String
 characterToString character = foldl (++) h [x ++ "\n" | x <- [n, a, d, s]]
   where
-    cbc = colorBegin Cyan
-    ce  = colorEnd
+    cbc = formatBegin (Cyan, Default, None)
+    ce  = formatEnd
     cr  = colorWrap Red
     cy  = colorWrap Yellow
     cm  = colorWrap Magenta
@@ -143,17 +144,25 @@ skillsFromTraits (Traits atn com cnf cth dtm dsp emo fea fms log men pat rea) =
         re = (/) (atn + dtm + fea + fms + pat + rea) 6
         tc = (/) (com + cnf + cth + dtm + dsp) 5
 
-
+valueBar :: Int -> String
+valueBar n = filledF filledChar ++ nonfilledF nonfilledChar
+  where filled       = n `div` 5
+        nonfilled     = 20 - filled
+        filledF      = formatWrap (Default, Blue, Underline)
+        nonfilledF    = formatWrap (Gray, Default, Underline)
+        filledChar   = take filled $ repeat $  '_' :: String
+        nonfilledChar = take nonfilled $ repeat $  '_' :: String
 
 skillsToString :: Skills -> String
 skillsToString (Skills ai aw cr ex lh pa pl re tc) = foldr (++) [] ss
-  where ss = [ (colorWrap Yellow "Aim:               ") ++ (show $ round $ ai) ++ "%\n"
-             , (colorWrap Yellow "Awareness:         ") ++ (show $ round $ aw) ++ "%\n"
-             , (colorWrap Yellow "Creativity:        ") ++ (show $ round $ cr) ++ "%\n"
-             , (colorWrap Yellow "Experience:        ") ++ (show $ round $ ex) ++ "%\n"
-             , (colorWrap Yellow "Levelheadedness:   ") ++ (show $ round $ lh) ++ "%\n"
-             , (colorWrap Yellow "Patience:          ") ++ (show $ round $ pa) ++ "%\n"
-             , (colorWrap Yellow "Planning:          ") ++ (show $ round $ pl) ++ "%\n"
-             , (colorWrap Yellow "Reflex:            ") ++ (show $ round $ re) ++ "%\n"
-             , (colorWrap Yellow "Team Coordination: ") ++ (show $ round $ tc) ++ "%\n"
+  where cy = colorWrap Cyan
+        ss = [ (cy "Aim:               ") ++ (valueBar $ round $ ai) ++ "\n"
+             , (cy "Awareness:         ") ++ (valueBar $ round $ aw) ++ "\n"
+             , (cy "Creativity:        ") ++ (valueBar $ round $ cr) ++ "\n"
+             , (cy "Experience:        ") ++ (valueBar $ round $ ex) ++ "\n"
+             , (cy "Levelheadedness:   ") ++ (valueBar $ round $ lh) ++ "\n"
+             , (cy "Patience:          ") ++ (valueBar $ round $ pa) ++ "\n"
+             , (cy "Planning:          ") ++ (valueBar $ round $ pl) ++ "\n"
+             , (cy "Reflex:            ") ++ (valueBar $ round $ re) ++ "\n"
+             , (cy "Team Coordination: ") ++ (valueBar $ round $ tc) ++ "\n"
              ]
