@@ -124,22 +124,23 @@ skillDeps (Traits atn com cnf cth dtm dsp emo fea fms log men pat rea) skill =
         cnfS = (++) "Confidence         " $ (vb $ round cnf) ++ "\n"
         cthS = (++) "CriticalThinking   " $ (vb $ round cth) ++ "\n"
         dtmS = (++) "Determination      " $ (vb $ round dtm) ++ "\n"
-        dspS = (++) "EmotionalStability " $ (vb $ round dsp) ++ "\n"
-        emoS = (++) "FineMotorSkills    " $ (vb $ round emo) ++ "\n"
-        feaS = (++) "LogicalReasoning   " $ (vb $ round fea) ++ "\n"
-        fmsS = (++) "MentalEndurance    " $ (vb $ round fms) ++ "\n"
-        logS = (++) "PatternRecognition " $ (vb $ round log) ++ "\n"
-        menS = (++) "ReactionQuickness  " $ (vb $ round men) ++ "\n"
-        patS = (++) "Discipline         " $ (vb $ round pat) ++ "\n"
-        reaS = (++) "Fearlessness       " $ (vb $ round rea) ++ "\n"
+        dspS = (++) "Discipline         " $ (vb $ round dsp) ++ "\n"
+        emoS = (++) "EmotionalStability " $ (vb $ round emo) ++ "\n"
+        feaS = (++) "Fearlessness       " $ (vb $ round fea) ++ "\n"
+        fmsS = (++) "FineMotorSkills    " $ (vb $ round fms) ++ "\n"
+        logS = (++) "LogicalReasoning   " $ (vb $ round log) ++ "\n"
+        menS = (++) "MentalEndurance    " $ (vb $ round men) ++ "\n"
+        patS = (++) "PatternRecognition " $ (vb $ round pat) ++ "\n"
+        reaS = (++) "ReactionQuickness  " $ (vb $ round rea) ++ "\n"
 
--- | This is where the math happens
+-- | This is where the dependency math happens
 -- TODO: Get help :|
 majorMinor :: [Double] -> [Double] -> Double
 majorMinor majors minors = (maTot + miTot) / (fromIntegral $ length (majors ++ minors))
-  where maFactor = 1.0 -- Help, I math unwell
+  where maFactor = 1.5 -- Help, I math unwell
         maAdj = map (* maFactor) majors
         miAdj = map (/ maFactor) minors
+        {-miAdj = minors-}
         maTot = foldr (+) 0 maAdj
         miTot = foldr (+) 0 miAdj
 
@@ -227,7 +228,8 @@ skillsWithDepsToString traits (Skills ai aw cr ex lh pa pl re tc) = foldr (++) [
              ]
 
 formattedCharacterSheet :: Character -> String
-formattedCharacterSheet character = foldl (++) hd [x ++ "\n" | x <- [n, a, d, s]]
+formattedCharacterSheet character =
+    foldl (++) hd [x ++ "\n" | x <- [fn, nn, ln, a, d, s]]
   where fb  = formatWrap (Default, Default, Bold)
         cy  = colorWrap Yellow
         hd  = "\n" ++ (fb "Generated Character Info:\n") ++ "\n"
@@ -235,9 +237,8 @@ formattedCharacterSheet character = foldl (++) hd [x ++ "\n" | x <- [n, a, d, s]
         sd  = skillsWithDepsToString (traits character) $ skills character
         sk  = skillsToString $ skills character
         fn  = (++) (cy "Firstname:   ") $ firstname ns
-        ln  = (++) (cy "Lastname:    ") $ lastname ns
         nn  = (++) (cy "Nickname:    ") $ nickname ns
-        n   = (++) fn ("\n" ++ nn ++ "\n") ++ ln
+        ln  = (++) (cy "Lastname:    ") $ lastname ns
         a   = (++) (cy "Age:         ") $ show $ age character
         d   = (++) (cy "Description: ") $ description character
         s   = (++) ("\n" ++ fb ("Skills:\n" ++ "\n")) $ sd
