@@ -18,12 +18,16 @@ module Character
 , Skill(..)
 , Skills
 , formattedCharacterSheet
-, skillDeps
 , skillsFromTraits
 ) where
 
 import System.Random
 import TermColors
+
+type SkillPoint = Int
+type TraitPoint = Double
+type Majors     = Minors
+type Minors     = [(Trait, SkillPoint)]
 
 data Character = Character
     { fullname    :: !Fullname
@@ -44,15 +48,6 @@ data Fullname = Fullname
     , nickname  :: !String
     } deriving (Show, Eq, Ord)
 
-formattedFullname :: Fullname -> String
-formattedFullname (Fullname fn ln nn) = foldr (++) "" ns
-  where
-    cy = colorWrap Yellow
-    ns = [ (cy "Firstname:   ") ++ (show fn) ++ "\n"
-         , (cy "Lastname:    ") ++ (show ln) ++ "\n"
-         , (cy "Nickname:    ") ++ (show nn)
-         ]
-
 data Trait = Attention
            | Communication
            | Confidence
@@ -69,19 +64,19 @@ data Trait = Attention
            deriving (Show, Ord, Eq, Enum)
 
 data Traits = Traits
-    { attention          :: !Double
-    , communication      :: !Double
-    , confidence         :: !Double
-    , criticalThinking   :: !Double
-    , determination      :: !Double
-    , discipline         :: !Double
-    , emotionalStability :: !Double
-    , fearlessness       :: !Double
-    , fineMotorSkills    :: !Double
-    , logicalReasoning   :: !Double
-    , mentalEndurance    :: !Double
-    , patternRecognition :: !Double
-    , reactionQuickness  :: !Double
+    { attention          :: !TraitPoint
+    , communication      :: !TraitPoint
+    , confidence         :: !TraitPoint
+    , criticalThinking   :: !TraitPoint
+    , determination      :: !TraitPoint
+    , discipline         :: !TraitPoint
+    , emotionalStability :: !TraitPoint
+    , fearlessness       :: !TraitPoint
+    , fineMotorSkills    :: !TraitPoint
+    , logicalReasoning   :: !TraitPoint
+    , mentalEndurance    :: !TraitPoint
+    , patternRecognition :: !TraitPoint
+    , reactionQuickness  :: !TraitPoint
     } deriving (Show, Read)
 
 data Skill = Aim
@@ -96,68 +91,47 @@ data Skill = Aim
             deriving (Show, Read, Enum, Eq, Ord)
 
 data Skills = Skills
-    { aim              :: !Double
-    , awareness        :: !Double
-    , creativity       :: !Double
-    , experience       :: !Double
-    , levelheadedness  :: !Double
-    , patience         :: !Double
-    , planning         :: !Double
-    , reflex           :: !Double
-    , teamCoordination :: !Double
+    { aim              :: !SkillPoint
+    , awareness        :: !SkillPoint
+    , creativity       :: !SkillPoint
+    , experience       :: !SkillPoint
+    , levelheadedness  :: !SkillPoint
+    , patience         :: !SkillPoint
+    , planning         :: !SkillPoint
+    , reflex           :: !SkillPoint
+    , teamCoordination :: !SkillPoint
     } deriving (Show, Read)
-
-skillDeps :: Traits -> Skill -> [String]
-skillDeps (Traits atn com cnf cth dtm dsp emo fea fms log men pat rea) skill =
-    case skill of Aim              -> [fmsS] ++ [emoS, patS]
-                  Awareness        -> [atnS, reaS, patS] ++ [dspS, logS]
-                  Creativity       -> [emoS] ++ [feaS, logS, patS]
-                  Experience       -> [patS, dspS] ++ [cnfS, menS]
-                  Levelheadedness  -> [emoS, feaS, logS] ++ [atnS, dtmS, dspS, patS]
-                  Patience         -> [dtmS, dspS, emoS, feaS, menS] ++ [cnfS, logS]
-                  Planning         -> [atnS, emoS, logS, patS] ++ [cthS, feaS]
-                  Reflex           -> [atnS, feaS, fmsS, reaS] ++ [dtmS, patS]
-                  TeamCoordination -> [comS, cnfS, dtmS, dspS] ++ [cthS]
-  where vb   = valueBar Blue
-        atnS = (++) "Attention          " $ (vb $ round atn) ++ "\n"
-        comS = (++) "Communication      " $ (vb $ round com) ++ "\n"
-        cnfS = (++) "Confidence         " $ (vb $ round cnf) ++ "\n"
-        cthS = (++) "CriticalThinking   " $ (vb $ round cth) ++ "\n"
-        dtmS = (++) "Determination      " $ (vb $ round dtm) ++ "\n"
-        dspS = (++) "Discipline         " $ (vb $ round dsp) ++ "\n"
-        emoS = (++) "EmotionalStability " $ (vb $ round emo) ++ "\n"
-        feaS = (++) "Fearlessness       " $ (vb $ round fea) ++ "\n"
-        fmsS = (++) "FineMotorSkills    " $ (vb $ round fms) ++ "\n"
-        logS = (++) "LogicalReasoning   " $ (vb $ round log) ++ "\n"
-        menS = (++) "MentalEndurance    " $ (vb $ round men) ++ "\n"
-        patS = (++) "PatternRecognition " $ (vb $ round pat) ++ "\n"
-        reaS = (++) "ReactionQuickness  " $ (vb $ round rea) ++ "\n"
 
 -- | This is where the dependency math happens
 -- TODO: Get help :|
-majorMinor :: [Double] -> [Double] -> Double
-majorMinor majors minors = (maTot + miTot) / (fromIntegral $ length (majors ++ minors))
+skillPointFromDeps :: [TraitPoint] -> [TraitPoint] -> SkillPoint
+skillPointFromDeps majors minors = round $ (+) avg $ (maAvg - miAvg) / 2.0
   where maFactor = 1.5 -- Help, I math unwell
-        maAdj = map (* maFactor) majors
-        miAdj = map (/ maFactor) minors
-        {-miAdj = minors-}
-        maTot = foldr (+) 0 maAdj
-        miTot = foldr (+) 0 miAdj
+        maCount  = fromIntegral $ length majors
+        miCount  = fromIntegral $ length minors
+        maTot    = foldr (+) 0 majors
+        miTot    = foldr (+) 0 minors
+        maAvg    = maTot / maCount
+        miAvg    = miTot / miCount
+        total    = maTot + miTot
+        count    = maCount + miCount
+        dev      = avg - 50.0
+        avg      = total / count
 
 skillsFromTraits :: Traits -> Skills
 skillsFromTraits (Traits atn com cnf cth dtm dsp emo fea fms log men pat rea) =
-        Skills ai aw cr ex lh pa pl re tc
-  where ai = majorMinor [ fms]                     [ emo, pat]
-        aw = majorMinor [ atn, rea, pat]           [ dsp, log]
-        cr = majorMinor [ emo]                     [ fea, log, pat]
-        ex = majorMinor [ pat, dsp]                [ cnf, men]
-        lh = majorMinor [ emo, fea, log]           [ atn, dtm, dsp, pat]
-        pa = majorMinor [ dtm, dsp, emo, fea, men] [ cnf, log]
-        pl = majorMinor [ atn, emo, log, pat]      [ cth, fea]
-        re = majorMinor [ atn, fea, fms, rea]      [ dtm, pat]
-        tc = majorMinor [ com, cnf, dtm, dsp]      [ cth]
+    Skills ai aw cr ex lh pa pl re tc
+  where ai = skillPointFromDeps [ fms]                     [ emo, pat]
+        aw = skillPointFromDeps [ atn, rea, pat]           [ dsp, log]
+        cr = skillPointFromDeps [ emo]                     [ fea, log, pat]
+        ex = skillPointFromDeps [ pat, dsp]                [ cnf, men]
+        lh = skillPointFromDeps [ emo, fea, log]           [ atn, dtm, dsp, pat]
+        pa = skillPointFromDeps [ dtm, dsp, emo, fea, men] [ cnf, log]
+        pl = skillPointFromDeps [ atn, emo, log, pat]      [ cth, fea]
+        re = skillPointFromDeps [ atn, fea, fms, rea]      [ dtm, pat]
+        tc = skillPointFromDeps [ com, cnf, dtm, dsp]      [ cth]
 
-valueBar :: Color -> Int -> String
+valueBar :: Color -> SkillPoint -> String
 valueBar c n = filledF filledChar ++ nonfilledF nonfilledChar
   where filled        = n `div` 5
         nonfilled     = 20 - filled
@@ -166,8 +140,8 @@ valueBar c n = filledF filledChar ++ nonfilledF nonfilledChar
         filledChar    = take filled $ repeat $  '\\'
         nonfilledChar = take nonfilled $ repeat $  '\\'
 
-traitsToString :: Traits -> String
-traitsToString (Traits atn com cnf cth dtm dsp emo fea fms log men pat rea) =
+formattedTraits :: Traits -> String
+formattedTraits (Traits atn com cnf cth dtm dsp emo fea fms log men pat rea) =
     foldr (++) [] ss
   where cw = colorWrap Red
         vb = valueBar Blue
@@ -186,46 +160,83 @@ traitsToString (Traits atn com cnf cth dtm dsp emo fea fms log men pat rea) =
              , (cw "Fearlessness:        ") ++ (vb $ round rea) ++ "\n"
              ]
 
-skillsToString :: Skills -> String
-skillsToString (Skills ai aw cr ex lh pa pl re tc) = foldr (++) [] ss
+formattedSkillDeps :: Traits -> Skill -> [String]
+formattedSkillDeps (Traits atn com cnf cth dtm dsp emo fea fms log men pat rea) skill =
+    case skill of Aim              -> frmt [fmsS] ++ [emoS, patS]
+                  Awareness        -> frmt [atnS, reaS, patS] ++ [dspS, logS]
+                  Creativity       -> frmt [emoS] ++ [feaS, logS, patS]
+                  Experience       -> frmt [patS, dspS] ++ [cnfS, menS]
+                  Levelheadedness  -> frmt [emoS, feaS, logS] ++ [atnS, dtmS, dspS, patS]
+                  Patience         -> frmt [dtmS, dspS, emoS, feaS, menS] ++ [cnfS, logS]
+                  Planning         -> frmt [atnS, emoS, logS, patS] ++ [cthS, feaS]
+                  Reflex           -> frmt [atnS, feaS, fmsS, reaS] ++ [dtmS, patS]
+                  TeamCoordination -> frmt [comS, cnfS, dtmS, dspS] ++ [cthS]
+  where vb   = valueBar Blue
+        c    = Blue
+        frmt = map (formatWrap (c, Default, Bold))
+        atnS = (++) "Attention          " $ (vb $ round atn) ++ "\n"
+        comS = (++) "Communication      " $ (vb $ round com) ++ "\n"
+        cnfS = (++) "Confidence         " $ (vb $ round cnf) ++ "\n"
+        cthS = (++) "CriticalThinking   " $ (vb $ round cth) ++ "\n"
+        dtmS = (++) "Determination      " $ (vb $ round dtm) ++ "\n"
+        dspS = (++) "Discipline         " $ (vb $ round dsp) ++ "\n"
+        emoS = (++) "EmotionalStability " $ (vb $ round emo) ++ "\n"
+        feaS = (++) "Fearlessness       " $ (vb $ round fea) ++ "\n"
+        fmsS = (++) "FineMotorSkills    " $ (vb $ round fms) ++ "\n"
+        logS = (++) "LogicalReasoning   " $ (vb $ round log) ++ "\n"
+        menS = (++) "MentalEndurance    " $ (vb $ round men) ++ "\n"
+        patS = (++) "PatternRecognition " $ (vb $ round pat) ++ "\n"
+        reaS = (++) "ReactionQuickness  " $ (vb $ round rea) ++ "\n"
+
+formattedSkills :: Skills -> String
+formattedSkills (Skills ai aw cr ex lh pa pl re tc) = foldr (++) [] ss
   where cw = colorWrap Cyan
         vb = valueBar Blue
-        ss = [ (cw "Aim:               ") ++ (vb $ round ai) ++ "\n"
-             , (cw "Awareness:         ") ++ (vb $ round aw) ++ "\n"
-             , (cw "Creativity:        ") ++ (vb $ round cr) ++ "\n"
-             , (cw "Experience:        ") ++ (vb $ round ex) ++ "\n"
-             , (cw "Levelheadedness:   ") ++ (vb $ round lh) ++ "\n"
-             , (cw "Patience:          ") ++ (vb $ round pa) ++ "\n"
-             , (cw "Planning:          ") ++ (vb $ round pl) ++ "\n"
-             , (cw "Reflex:            ") ++ (vb $ round re) ++ "\n"
-             , (cw "Team Coordination: ") ++ (vb $ round tc) ++ "\n"
+        ss = [ (cw "Aim:               ") ++ (vb ai) ++ "\n"
+             , (cw "Awareness:         ") ++ (vb aw) ++ "\n"
+             , (cw "Creativity:        ") ++ (vb cr) ++ "\n"
+             , (cw "Experience:        ") ++ (vb ex) ++ "\n"
+             , (cw "Levelheadedness:   ") ++ (vb lh) ++ "\n"
+             , (cw "Patience:          ") ++ (vb pa) ++ "\n"
+             , (cw "Planning:          ") ++ (vb pl) ++ "\n"
+             , (cw "Reflex:            ") ++ (vb re) ++ "\n"
+             , (cw "Team Coordination: ") ++ (vb tc) ++ "\n"
              ]
 
-skillsWithDepsToString :: Traits -> Skills -> String
-skillsWithDepsToString traits (Skills ai aw cr ex lh pa pl re tc) = foldr (++) [] ss
+formattedSkillsExtra :: Traits -> Skills -> String
+formattedSkillsExtra traits (Skills ai aw cr ex lh pa pl re tc) = foldr (++) [] ss
   where cw = formatWrap (Yellow, Default, Bold)
-        dp = skillDeps traits
+        dp = formattedSkillDeps traits
         vb = valueBar Yellow
-        fm = foldr (++) "" . map (formatWrap (Blue, Default, Italics))
-        ss = [ (cw "Aim:               ") ++ (vb $ round ai) ++ "\n"
+        fm = foldr (++) "" . map (formatWrap (Blue, Default, None))
+        ss = [ (cw "Aim:               ") ++ (vb ai) ++ "\n"
              , fm (dp Aim)                ++ "\n"
-             , (cw "Awareness:         ") ++ (vb $ round aw) ++ "\n"
+             , (cw "Awareness:         ") ++ (vb aw) ++ "\n"
              , fm (dp Awareness)          ++ "\n"
-             , (cw "Creativity:        ") ++ (vb $ round cr) ++ "\n"
+             , (cw "Creativity:        ") ++ (vb cr) ++ "\n"
              , fm (dp Creativity)         ++ "\n"
-             , (cw "Experience:        ") ++ (vb $ round ex) ++ "\n"
+             , (cw "Experience:        ") ++ (vb ex) ++ "\n"
              , fm (dp Experience)         ++ "\n"
-             , (cw "Levelheadedness:   ") ++ (vb $ round lh) ++ "\n"
+             , (cw "Levelheadedness:   ") ++ (vb lh) ++ "\n"
              , fm (dp Levelheadedness)    ++ "\n"
-             , (cw "Patience:          ") ++ (vb $ round pa) ++ "\n"
+             , (cw "Patience:          ") ++ (vb pa) ++ "\n"
              , fm (dp Patience)           ++ "\n"
-             , (cw "Planning:          ") ++ (vb $ round pl) ++ "\n"
+             , (cw "Planning:          ") ++ (vb pl) ++ "\n"
              , fm (dp Planning)           ++ "\n"
-             , (cw "Reflex:            ") ++ (vb $ round re) ++ "\n"
+             , (cw "Reflex:            ") ++ (vb re) ++ "\n"
              , fm (dp Reflex)             ++ "\n"
-             , (cw "Team Coordination: ") ++ (vb $ round tc) ++ "\n"
+             , (cw "Team Coordination: ") ++ (vb tc) ++ "\n"
              , fm (dp TeamCoordination)   ++ "\n"
              ]
+
+formattedFullname :: Fullname -> String
+formattedFullname (Fullname fn ln nn) = foldr (++) "" ns
+  where
+    cy = colorWrap Yellow
+    ns = [ (cy "Firstname:   ") ++ (show fn) ++ "\n"
+         , (cy "Lastname:    ") ++ (show ln) ++ "\n"
+         , (cy "Nickname:    ") ++ (show nn)
+         ]
 
 formattedCharacterSheet :: Character -> String
 formattedCharacterSheet character =
@@ -234,12 +245,12 @@ formattedCharacterSheet character =
         cy  = colorWrap Yellow
         hd  = "\n" ++ (fb "Generated Character Info:\n") ++ "\n"
         ns  = fullname character
-        sd  = skillsWithDepsToString (traits character) $ skills character
-        sk  = skillsToString $ skills character
+        sd  = formattedSkillsExtra (traits character) $ skills character
+        sk  = formattedSkills $ skills character
         fn  = (++) (cy "Firstname:   ") $ firstname ns
         nn  = (++) (cy "Nickname:    ") $ nickname ns
         ln  = (++) (cy "Lastname:    ") $ lastname ns
         a   = (++) (cy "Age:         ") $ show $ age character
         d   = (++) (cy "Description: ") $ description character
         s   = (++) ("\n" ++ fb ("Skills:\n" ++ "\n")) $ sd
-        t   = (++) ("\n" ++ fb ("Traits:\n" ++ "\n")) $ traitsToString $ traits character
+        t   = (++) ("\n" ++ fb ("Traits:\n" ++ "\n")) $ formattedTraits $ traits character

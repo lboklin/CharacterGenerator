@@ -13,7 +13,7 @@ Portability :  portable
 module Main where
 
 import TermColors
-import CharacterGen
+import Generator
 import Character
 
 main :: IO ()
