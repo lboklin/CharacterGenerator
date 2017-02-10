@@ -243,14 +243,14 @@ formattedCharacterSheet character =
     foldl (++) hd [x ++ "\n" | x <- [fn, nn, ln, a, d, s]]
   where fb  = formatWrap (Default, Default, Bold)
         cy  = colorWrap Yellow
-        hd  = "\n" ++ (fb "Generated Character Info:\n") ++ "\n"
+        hd  = "\n" ++ fb "Generated Character Info:\n" ++ "\n"
         ns  = fullname character
         sd  = formattedSkillsExtra (traits character) $ skills character
-        sk  = formattedSkills $ skills character
+        -- sk  = formattedSkills $ skills character
         fn  = (++) (cy "Firstname:   ") $ firstname ns
         nn  = (++) (cy "Nickname:    ") $ nickname ns
         ln  = (++) (cy "Lastname:    ") $ lastname ns
         a   = (++) (cy "Age:         ") $ show $ age character
         d   = (++) (cy "Description: ") $ description character
-        s   = (++) ("\n" ++ fb ("Skills:\n" ++ "\n")) $ sd
+        s   = (++) ("\n" ++ fb ("Skills:\n" ++ "\n")) sd
         t   = (++) ("\n" ++ fb ("Traits:\n" ++ "\n")) $ formattedTraits $ traits character

@@ -28,6 +28,7 @@ data Style = None | Bold | Italics | Underline
 
 data Format = Format (Color, Color, Style) deriving (Show)
 
+color :: Color -> String
 color c = case c of Red     -> "1"
                     Green   -> "2"
                     Yellow  -> "3"
@@ -59,4 +60,5 @@ formatBegin (c1, c2, c3) = "\ESC[" ++ fg ++ bg ++ st ++ "m\STX"
         bg = ";4" ++ color c2
         st = style c3
 
+formatEnd :: String
 formatEnd = "\ESC[m\STX"
