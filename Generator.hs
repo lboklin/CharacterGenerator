@@ -11,7 +11,7 @@ Portability :  portable
 <module description starting at first column>
 -}
 
-module CharacterGen
+module Generator
 ( genCharacter ) where
 
 import System.Random
