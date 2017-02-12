@@ -15,7 +15,6 @@ module CharacterGen
 ( genCharacter ) where
 
 import System.Random
-import TermColors
 import Character
 
 ----------------
