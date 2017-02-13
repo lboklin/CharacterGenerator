@@ -6,3 +6,4 @@ Tags
 **/*.o
 **/*.exe
 **/*.dll
+**/*.meta
