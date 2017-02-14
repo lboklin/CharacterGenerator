@@ -11,11 +11,12 @@
 # resolver: lts-3.5
 # resolver: nightly-2015-09-21
 # resolver: ghc-7.10.2
+resolver: ghc-8.0.2
 # resolver: ghcjs-0.1.0_ghc-7.10.2
 # resolver:
 #  name: custom-snapshot
 #  location: "./custom-snapshot.yaml"
-resolver: lts-8.0
+# resolver: lts-8.0
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -39,7 +40,7 @@ packages:
 - '.'
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
-extra-deps: []
+extra-deps: [random-1.1]
 
 # Override default flag values for local packages and extra-deps
 flags: {}
