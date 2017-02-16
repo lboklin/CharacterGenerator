@@ -125,17 +125,25 @@ data Preferences = Preferences
   , gear      :: Preference
   }
 
-musicGenre :: [String]
-musicGenre = map ((++) "Genre") [1..20]
+musicGenres :: [String]
+musicGenres = map ((++) "Genre") [1..20]
+
+genRandElemFrom :: [String] -> Int -> String
+genRandElemFrom xs seed = (!!) xs $ head $ randomRs (0, ln) $ mkStdGen seed
+  where
+    ln = length xs
 
 foodCategories :: [String]
 foodCategories = map ((++) "Category") [1..20]
+genFoodCategories seed = (!!) foodCategories $ head $ randomRs (0, ln) $ mkStdGen seed
+  where
+    ln = length foodCategories
 
 genPreferences :: Int -> Traits -> Preferences
 genPreferences seed (Traits atn com cnf cth dtm dsp emo fea fms lgc men pat rea) =
   Preferences
-  { color     = ColorPref (genColor $ rn !! 0) $ toAppreciation $ rn !! 1
-  , music     = rn !! 0
+  { color     = ColorPref (genColor $ rn !! 0) ap
+  , music     = MusicPref (genRandElemFrom musicGenres seed) ap
   , food      = rn !! 0
   , season    = rn !! 0
   , timeofday = rn !! 0
@@ -150,3 +158,4 @@ genPreferences seed (Traits atn com cnf cth dtm dsp emo fea fms lgc men pat rea)
   }
   where
     rn = take 13 . randomRs (1, 99) $ mkStdGen seed
+    ap = toAppreciation $ rn !! 1
