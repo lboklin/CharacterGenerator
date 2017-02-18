@@ -21,9 +21,9 @@ module Character
 , skillsFromTraits
 ) where
 
-import TermColors
+import Cli 
+import Types
 
-type SkillPoint = Int
 type TraitPoint = Double
 
 data Character = Character
@@ -34,33 +34,11 @@ data Character = Character
     , skills      :: !Skills
     } deriving (Show)
 
-data Name
-    = Firstname String
-    | Lastname String
-    | Nickname String
-    deriving (Show, Eq, Ord)
-
 data Fullname = Fullname
     { firstname :: !String
     , lastname  :: !String
     , nickname  :: !String
     } deriving (Show, Eq, Ord)
-
-data Trait
-    = Attention
-    | Communication
-    | Confidence
-    | CriticalThinking
-    | Determination
-    | EmotionalStability
-    | FineMotorSkills
-    | LogicalReasoning
-    | MentalEndurance
-    | PatternRecognition
-    | ReactionQuickness
-    | Discipline
-    | Fearlessness
-    deriving (Show, Ord, Eq, Enum)
 
 data Traits = Traits
     { attention          :: !TraitPoint
@@ -78,18 +56,6 @@ data Traits = Traits
     , reactionQuickness  :: !TraitPoint
     } deriving (Show, Read)
 
-data Skill
-    = Aim
-    | Awareness
-    | Creativity
-    | Experience
-    | Levelheadedness
-    | Patience
-    | Planning
-    | Reflex
-    | TeamCoordination
-    deriving (Show, Read, Enum, Eq, Ord)
-
 data Skills = Skills
     { aim              :: !SkillPoint
     , awareness        :: !SkillPoint
@@ -102,41 +68,12 @@ data Skills = Skills
     , teamCoordination :: !SkillPoint
     } deriving (Show, Read)
 
--- | This is where the dependency math happens
--- TODO: Get help :|
-skillPointFromDeps :: [TraitPoint] -> [TraitPoint] -> SkillPoint
-skillPointFromDeps majors minors = round $ (+) avg $ (maAvg - miAvg) / 2.0
-  where
-    maCount = fromIntegral $ length majors
-    miCount = fromIntegral $ length minors
-    maTot = sum majors
-    miTot = sum minors
-    maAvg = maTot / maCount
-    miAvg = miTot / miCount
-    total = maTot + miTot
-    count = maCount + miCount
-    avg = total / count
-
-skillsFromTraits :: Traits -> Skills
-skillsFromTraits (Traits atn com cnf cth dtm dsp emo fea fms lgc men pat rea) =
-    Skills ai aw cr ex lh pa pl re tc
-  where
-    ai = skillPointFromDeps [fms] [emo, pat]
-    aw = skillPointFromDeps [atn, rea, pat] [dsp, lgc]
-    cr = skillPointFromDeps [emo] [fea, lgc, pat]
-    ex = skillPointFromDeps [pat, dsp] [cnf, men]
-    lh = skillPointFromDeps [emo, fea, lgc] [atn, dtm, dsp, pat]
-    pa = skillPointFromDeps [dtm, dsp, emo, fea, men] [cnf, lgc]
-    pl = skillPointFromDeps [atn, emo, lgc, pat] [cth, fea]
-    re = skillPointFromDeps [atn, fea, fms, rea] [dtm, pat]
-    tc = skillPointFromDeps [com, cnf, dtm, dsp] [cth]
-
-valueBar :: Color -> SkillPoint -> String
+valueBar :: Cli.Color -> SkillPoint -> String
 valueBar c n = filledF filledChar ++ nonfilledF nonfilledChar
   where filled        = n `div` 5
         nonfilled     = 20 - filled
         filledF       = formatWrap (c, c, Bold)
-        nonfilledF    = formatWrap (Default, Cyan, None)
+        nonfilledF    = formatWrap (Default, Cli.Cyan, None)
         filledChar    = replicate filled '\\'
         nonfilledChar = replicate nonfilled '\\'
 
@@ -171,8 +108,8 @@ formattedSkillDeps (Traits atn com cnf cth dtm dsp emo fea fms lgc men pat rea) 
                   Planning         -> frmt [atnS, emoS, lgcS, patS] ++ [cthS, feaS]
                   Reflex           -> frmt [atnS, feaS, fmsS, reaS] ++ [dtmS, patS]
                   TeamCoordination -> frmt [comS, cnfS, dtmS, dspS] ++ [cthS]
-  where vb   = valueBar Blue
-        c    = Blue
+  where vb   = valueBar Cli.Blue
+        c    = Cli.Blue
         frmt = map (formatWrap (c, Default, Bold))
         atnS = (++) "Attention          " $ vb (round atn) ++ "\n"
         comS = (++) "Communication      " $ vb (round com) ++ "\n"
@@ -190,7 +127,7 @@ formattedSkillDeps (Traits atn com cnf cth dtm dsp emo fea fms lgc men pat rea) 
 
 -- formattedSkills :: Skills -> String
 -- formattedSkills (Skills ai aw cr ex lh pa pl re tc) = concat ss
-  -- where cw = colorWrap Cyan
+  -- where cw = colorWrap Cli.Cyan
         -- vb = valueBar Blue
         -- ss = [ cw "Aim:               " ++ vb (round ai) ++ "\n"
              -- , cw "Awareness:         " ++ vb (round aw) ++ "\n"
@@ -206,9 +143,9 @@ formattedSkillDeps (Traits atn com cnf cth dtm dsp emo fea fms lgc men pat rea) 
 formattedSkillsExtra :: Traits -> Skills -> String
 formattedSkillsExtra trts (Skills ai aw cr ex lh pa pl re tc) = concat s
   where
-    a = formatWrap (Yellow, Default, Bold)
-    b = valueBar Yellow
-    c = concatMap (formatWrap (Blue, Default, None))
+    a = formatWrap (Cli.Yellow, Default, Bold)
+    b = valueBar Cli.Yellow
+    c = concatMap (formatWrap (Cli.Blue, Default, None))
     s =
         [ a "Aim:               "                      ++ b ai ++ "\n"
         , c (formattedSkillDeps trts Aim)              ++         "\n"
@@ -240,7 +177,7 @@ formattedCharacterSheet character =
         ]
   where
     fb = formatWrap (Default, Default, Bold)
-    cy = colorWrap Yellow
+    cy = colorWrap Cli.Yellow
     hd = "\n" ++ fb "Generated Character Info:\n" ++ "\n"
     ns = fullname character
     sd = formattedSkillsExtra (traits character) $ skills character
@@ -251,4 +188,3 @@ formattedCharacterSheet character =
     a  = (++) (cy "Age:         ") $ show $ age character
     d  = (++) (cy "Description: ") $ description character
     s  = (++) ("\n" ++ fb ("Skills:\n" ++ "\n")) sd
-    -- t = (++) ("\n" ++ fb ("Traits:\n" ++ "\n")) $ formattedTraits $ traits character

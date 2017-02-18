@@ -90,18 +90,6 @@ data Trait
     | Fearlessness
     deriving (Show, Ord, Eq, Enum)
 
-data Skill
-    = Aim 
-    | Awareness
-    | Creativity
-    | Experience
-    | Levelheadedness
-    | Patience
-    | Planning
-    | Reflex
-    | TeamCoordination
-    deriving (Show, Read, Enum, Eq, Ord)
-
 data Preference
   =  ColorPref      Color      Appreciation
   |  MusicPref      String     Appreciation
