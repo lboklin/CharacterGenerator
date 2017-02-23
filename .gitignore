@@ -24,3 +24,6 @@ dist/
 TAGS
 tags
 a.out
+*.o
+*.so
+*.h

@@ -12,7 +12,7 @@ Portability :  portable
 -}
 module Main where
 
-import TermColors
+import Cli
 import Generator
 import Character
 

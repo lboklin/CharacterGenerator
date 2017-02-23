@@ -3,13 +3,13 @@ using System.Runtime.InteropServices;
 
 namespace CharGen {
     class CallHaskell {
-        [DllImport("libchargen.so", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("libchargen", CallingConvention = CallingConvention.Cdecl)]
         private static extern void hs_init(IntPtr argc, IntPtr argv);
 
-        [DllImport("libchargen.so", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("libchargen", CallingConvention = CallingConvention.Cdecl)]
         private static extern void hs_exit();
 
-        [DllImport("libchargen.so", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("libchargen", CallingConvention = CallingConvention.Cdecl)]
         private static extern string c_newCharAsString(int seed);
 
         public static void Main(string[] args) {
@@ -18,8 +18,10 @@ namespace CharGen {
 
             try {
                 Console.WriteLine("Calling to Haskell...");
-                int readResult = Console.ReadLine();
-                string result = c_newCharAsString(readResult);
+                string readResult = Console.ReadLine();
+                int i;
+                int.TryParse(readResult, out i);
+                string result = c_newCharAsString(i);
                 Console.WriteLine(result);
             } finally {
                 Console.WriteLine("Exiting runtime...");

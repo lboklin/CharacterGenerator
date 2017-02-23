@@ -1,4 +1,4 @@
-name:                CharacterGenerator
+name:                chargen
 version:             0.1.0.0
 -- synopsis:
 -- description:
@@ -9,20 +9,21 @@ author:              Ludvig Böklin
 maintainer:          ludvig.boklin@protonmail.com
 copyright:           2017 Ludvig Böklin
 category:            experimental,game,tools
-build-type:          Simple
+build-type:          library
 extra-source-files:  README.md
 cabal-version:       >=1.10
 
-library
+library 
   hs-source-dirs:      src
-  exposed-modules:     Main,
+  exposed-modules:     Lib,
+                       Main,
                        Character,
                        Generator,
-                       TermColors
+                       Cli
   build-depends:       base >= 4.7 && < 5,
                        random
   default-language:    Haskell2010
-  ghc-options:         -static -shared
+  ghc-options:         -dynamic -shared -fPIC
 
 source-repository head
   type:     git
